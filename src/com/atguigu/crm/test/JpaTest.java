@@ -16,5 +16,6 @@ public class JpaTest {
 		StorageDao dao = ioc.getBean(StorageDao.class);
 		List<Storage> list = dao.findAll();
 		System.out.println(list);
+		System.out.println("jpa");
 	}
 }
