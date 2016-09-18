@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.ProductMapper">
+	<delete id="delete" parameterType="Integer">
+		delete from products where id=#{id}
+	</delete>
+	<update id="update" parameterType="com.atguigu.crm.entity.Product">
+		update products set batch=#{batch},name=#{name},type=#{type},
+		unit=#{unit},price=#{price},memo=#{memo}
+		where id=#{id}
+	</update>
+
+	<select id="getById" resultType="com.atguigu.crm.entity.Product" parameterType="Integer">
+		select id,batch,name,type,unit,price,memo from products
+		where id=#{id}
+	</select>
+	<insert id="save" parameterType="com.atguigu.crm.entity.Product">
+		insert into products(id,batch,name,type,unit,price,memo)
+		values(atguigu.nextVal,#{batch},#{name},#{type},#{unit},#{price},#{memo})
+	</insert>
+	<select id="getAll" resultType="com.atguigu.crm.entity.Product">
+		select * from products
+	</select>
+	
+	<select id="getLimitedList" parameterType="map"
+			resultType="com.atguigu.crm.entity.Product">
+		select * from(
+		select rownum rn,id,batch,memo,name,price,type,unit from products
+		<include refid="queryCondition"/>
+		)
+		<![CDATA[where rn>=#{firstIndex} and rn<#{lastIndex}]]>
+	</select>
+	<sql id="queryCondition">
+		where 1=1
+		<if test="batch!=null">
+		and batch like #{batch}
+		</if>
+		<if test="type!=null">
+		and batch like #{type}
+		</if>
+		<if test="memo!=null">
+		and memo like #{memo}
+		</if>
+		<if test="name!=null">
+		and name like #{name}
+		</if>
+		<if test="minPrice!=null">
+		<![CDATA[and price >= #{minPrice}]]>
+		</if>
+		<if test="maxPrice!=null">
+		<![CDATA[and price <= #{maxPrice}]]>
+		</if>
+		
+	</sql>
+	<select id="getTotalCount" resultType="int">
+		select count(*) from products
+		<include refid="queryCondition"/>
+	</select>
+	
+</mapper>

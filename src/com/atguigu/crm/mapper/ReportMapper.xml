@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.ReportMapper">
+	<select id="getPageContent" parameterType="map" resultType="map">
+		select * from (
+		select rownum rn,t.* from(
+		select c.name "custName",sum(p.price * oi.item_count) "totalMoney"
+		from customers c
+		inner join orders o on c.id=o.customer_id
+		inner join order_items oi on oi.order_id=o.id
+		inner join products p on oi.product_id=p.id
+		<include refid="queryCondition"/>
+		group by c.name
+		) t
+		
+		)
+		<![CDATA[
+			where rn >= #{firstIndex} and rn < #{lastIndex}
+		]]>
+	</select>
+	<select id="getTotalCount" parameterType="map" resultType="int">
+		select count(*) from (
+		select rownum rn,t.* from(
+		select c.name "custName",sum(p.price * oi.item_count) "totalMoney"
+		from customers c
+		inner join orders o on c.id=o.customer_id
+		inner join order_items oi on oi.order_id=o.id
+		inner join products p on oi.product_id=p.id
+		<include refid="queryCondition"/>
+		group by c.name
+		) t
+		
+		)
+		
+	</select>
+	
+	<sql id="queryCondition">
+		<where>
+			<if test="custName!=null">
+				c.name like #{custName}
+			</if>
+			<if test="minDate!=null">
+				and o.order_date >= #{minDate}
+			</if>
+			<if test="maxDate!=null">
+			<![CDATA[
+				and o.order_date <= #{maxDate}
+			]]>
+			</if>
+		</where>
+	</sql>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>

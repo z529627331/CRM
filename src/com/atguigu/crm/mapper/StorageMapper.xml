@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.StorageMapper">
+	<delete id="delete" parameterType="Long">
+		delete from storages where id=#{id}
+	</delete>
+	<update id="update" parameterType="com.atguigu.crm.entity.Storage">
+		update storages set stock_count=#{stockCount} where id=#{id}
+	</update>
+	<select id="getById"  parameterType="Long" resultType="com.atguigu.crm.entity.Storage">
+		select id,product_id "product.id",ware_house,stock_count,stock_ware,memo 
+		from storages where id=#{id}
+	</select>
+	<insert id="insert" parameterType="com.atguigu.crm.entity.Storage">
+		insert into storages(id,memo,stock_count,stock_ware,ware_house,product_id)
+		values(atguigu.nextVal,#{memo},#{stockCount},#{stockWare},#{wareHouse},#{product.id})
+	</insert>
+	<select id="getTotalCount" parameterType="map" resultType="int">
+		select count(s.id) from storages s left join products p on s.product_id=p.id
+		<include refid="queryCondition"/>
+	</select>
+	<sql id="queryCondition">
+		<where>
+			<if test="wareHouse!=null">
+				and	s.ware_house like #{wareHouse}
+			</if>
+			<if test="productName!=null">
+				and	p.name  like #{productName}
+			</if>
+		</where>
+		
+	</sql>
+	<resultMap type="com.atguigu.crm.entity.Storage" id="storageList">
+		<id column="id" property="id"/>
+		<result column="ware_house" property="wareHouse"/>
+		<result column="stock_ware" property="stockWare"/>
+		<result column="stock_count" property="stockCount"/>
+		<result column="memo" property="memo"/>
+		<association property="product"  column="s.product_id"  javaType="com.atguigu.crm.entity.Product">
+			<id column="id" property="id"/>
+			<result column="name" property="name"/>
+		</association>
+	</resultMap>
+	<select id="getLimitedList" resultMap="storageList" parameterType="map">
+		select * from(
+		select rownum rn,s.id,p.name ,ware_house,stock_count,stock_ware,s.memo ,s.product_id
+		from storages s left join products p on s.product_id=p.id
+		<include refid="queryCondition"/>
+		)
+		<![CDATA[where rn >=#{firstIndex} and rn<#{lastIndex}]]>
+	</select>
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+</mapper>

@@ -1,0 +1,12 @@
+/applicationContext-jpa.xml
+/applicationContext-quartz.xml
+/applicationContext-shiro.xml
+/applicationContext.xml
+/com
+/ehcache-shiro.xml
+/i18n.properties
+/jdbc.properties
+/jpa.properties
+/log4j.properties
+/mybatis-config.xml
+/org

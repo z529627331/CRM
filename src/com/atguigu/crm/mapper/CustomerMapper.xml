@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.CustomerMapper">
+
+	<select id="getAllCust" resultType="com.atguigu.crm.entity.Customer">
+		select id,no,name
+		from customers
+	</select>
+
+
+	<update id="delete" parameterType="Long">
+		update customers
+		set state='删除'
+		where id=#{id}
+	</update>
+
+
+	
+	<select id="getTotalCount" resultType="int">
+		select count(*) from customers
+	</select>
+	
+
+	
+	
+	<update id="update" parameterType="com.atguigu.crm.entity.Customer">
+		update customers
+		set name=#{name},region=#{region},manager_id =#{manager.id},
+		customer_level=#{level},state=#{state},satify=#{satify},credit=#{credit},
+		address=#{address},tel=#{tel},fax=#{fax},websit=#{websit},licence_no=#{licenceNo}, 
+		chief=#{chief},bankroll=#{bankroll},turnover=#{turnover},bank=#{bank},
+		bank_account=#{bankAccount},local_tax_no=#{localTaxNo},national_tax_no=#{nationalTaxNo}
+		where id=#{id}
+	</update>
+	<select id="getById" parameterType="Long" resultType="com.atguigu.crm.entity.Customer">
+		select id,no,name,region,manager_id "manager.id" ,
+		satify,credit,customer_level "level",state,
+		address,zip,tel,fax,websit,
+		licence_no,chief,bankroll,turnover,bank,bank_account "bankAccount",
+		local_tax_no "localTaxNo",national_tax_no "nationalTaxNo"
+		from customers
+		where id=#{id}
+	</select>
+
+
+	<select id="getListInPage" parameterType="map" resultType="com.atguigu.crm.entity.Customer">
+		select * from(
+			select rownum rn,cus.id,no,cus.name,region,cus.manager_id as "manager.id",
+			con.name as "manager.name",cus.customer_level as "level",cus.state
+		      from customers cus
+		      left join contacts con
+		      on con.id = cus.manager_id
+		) 
+		<![CDATA[where rn >=#{firstIndex} and rn <#{endIndex}]]>
+	</select>
+	
+	<select id="getAllCredit" resultType="String">
+		select credit from customers
+	</select>
+	
+	<insert id="save">
+			<selectKey	keyProperty="id" order="BEFORE" resultType="long">
+				SELECT atguigu.nextVal
+				FROM dual
+			</selectKey>
+		insert into customers (id,name,no,state)
+		values(#{id},#{name},#{no},#{state})
+	</insert>
+</mapper>

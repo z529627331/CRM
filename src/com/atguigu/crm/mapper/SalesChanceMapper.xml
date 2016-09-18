@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.SalesChanceMapper">
+
+	<delete id="delete" parameterType="Long">
+		delete from sales_chances where id=#{id}
+	</delete>
+	<update id="update">
+		update sales_chances set source=#{source},cust_name=#{custName},rate=#{rate},
+		title=#{title},contact=#{contact},contact_tel=#{contactTel},description=#{description}
+		where id=#{id}
+	</update>
+	
+	<select id="get" parameterType="Long" resultType="com.atguigu.crm.entity.SalesChance">
+		SELECT s.id, source, title, cust_name, rate, contact, contact_tel, description,
+		 create_date,created_user_id "createBy.id" ,designee_id "designee.id",u.name "designee.name",
+		u.name "createBy.name"
+		from sales_chances s left join users u on s.designee_id=u.id
+		where s.id=#{id}
+	</select>
+	
+	<insert id="saveChance" parameterType="com.atguigu.crm.entity.SalesChance" >
+		insert into sales_chances(id,title,contact,contact_tel,
+								create_date,cust_name,
+								description,rate,
+								source,created_user_id,status)
+								 values(atguigu.nextVal,#{title},#{contact},#{contactTel},
+								 #{createDate},#{custName},
+								 #{description},#{rate},
+								 #{source},#{createBy.id},#{status})
+	</insert>
+	<select id="getTotalCount" resultType="long">
+		select count(id) from sales_chances  
+		<include refid="queryCondition"/>
+	</select>
+	<sql id="queryCondition">
+		where created_user_id=#{createBy.id} and status=1
+		<if test="custName!=null">
+			and cust_name like #{custName}
+		</if>
+		<if test="contact != null">
+		AND contact LIKE #{contact}
+		</if>
+		<if test="title != null">
+		AND title LIKE #{title}
+		</if>
+		<if test="minCreateDate != null">
+		AND create_date >= #{minCreateDate}
+		</if>
+		<if test="maxCreateDate != null">
+		<![CDATA[
+		AND create_date <= #{maxCreateDate}
+		]]>
+		</if>
+		<if test="minRate != null">
+		AND rate >= #{minRate}
+		</if>
+		<if test="maxRate != null">
+		<![CDATA[
+		AND rate <= #{maxRate}
+		]]>
+		</if>
+	</sql>
+	<select id="getLimitedList" resultType="com.atguigu.crm.entity.SalesChance">
+		select * from (
+			select rownum rn, id, cust_name, title, contact, contact_tel, create_date
+			from sales_chances
+			<include refid="queryCondition"/>
+		)
+		<![CDATA[ where rn >=${firstIndex} and rn <#{lastIndex}]]>
+	</select>
+	<!-- status不要忘了改回1 -->
+</mapper>

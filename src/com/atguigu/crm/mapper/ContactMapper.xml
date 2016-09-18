@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.ContactMapper">
+	<insert id="save">
+		insert into contacts(id,name,tel,customer_id)
+		values(atguigu.nextVal,#{name},#{tel},#{customer.id})
+	</insert>
+	<select id="getByCustId" parameterType="Long" resultType="com.atguigu.crm.entity.Contact">
+		select name,id,customer_id "customer.id"
+		from contacts where customer_id=#{id}
+	</select>
+</mapper>

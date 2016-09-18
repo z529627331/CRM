@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.DrainMapper">
+	<update id="confirm" parameterType="com.atguigu.crm.entity.CustomerDrain">
+		update customer_drains set drain_date=#{drainDate},reason=#{reason},status=#{status}
+		where id=#{id}
+	</update>
+	<update id="updateDelay" parameterType="com.atguigu.crm.entity.CustomerDrain">
+		update customer_drains set delay=#{delay}
+		where id=#{id}
+	</update>
+	<select id="getById" parameterType="long" resultType="com.atguigu.crm.entity.CustomerDrain">
+		select cd.id,c.name "customer.name",cs.name "customer.manager.name",
+		cd.last_order_date,delay
+		from customer_drains cd
+	    left outer join customers c on cd.customer_id=c.id
+	    left outer join contacts cs on c.manager_id=cs.id
+	    where cd.id=#{id}
+	</select>
+	<select id="getDrainCount" parameterType="map" resultType="int">
+		
+		select count(id) from(
+		select cd.id ,cd.status,cd.reason,cd.last_order_date,cd.drain_date,
+	    c.name "customerName",cs.name "managerName"
+	    from customer_drains cd
+	    left outer join customers c on cd.customer_id=c.id
+	    left outer join contacts cs on c.manager_id=cs.id
+	    left outer join orders o on o.customer_id=c.id
+	    where cd.status in ('流失','流失预警')
+		<include refid="drain"/>
+		)
+		
+	</select>
+	<resultMap type="com.atguigu.crm.entity.CustomerDrain" id="drainMap">
+		<id property="id" column="id"/>
+		<result property="drainDate" column="drain_date"/>
+		<result property="lastOrderDate" column="last_order_date"/>
+		<result property="reason" column="reason"/>
+		<result property="status" column="status"/>
+		<association property="customer" javaType="com.atguigu.crm.entity.Customer">
+			<result property="name" column="customerName"/>
+			<result property="manager.name" column="managerName"/>
+		</association>
+	</resultMap>
+	<select id="getDrainListInPage" parameterType="map" resultMap="drainMap">
+		select * from (
+		select rownum rn,t.* from(
+		select cd.id ,cd.status,cd.reason,cd.last_order_date,cd.drain_date,
+	    c.name "customerName",cs.name "managerName"
+	    from customer_drains cd
+	    left outer join customers c on cd.customer_id=c.id
+	    left outer join contacts cs on c.manager_id=cs.id
+	    left outer join orders o on o.customer_id=c.id
+	    where cd.status in ('流失','流失预警')
+		<include refid="drain"/>
+		) t
+		)
+		<![CDATA[where rn >=#{firstIndex} and rn <#{endIndex}]]>
+	</select>
+	<sql id="drain">
+		<if test="customerName!=null">
+			and c.name like #{customerName}
+		</if>
+		<if test="managerName!=null">
+			and cs.name like #{managerName}
+		</if>
+	</sql>	
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.AuthMapper">
+	
+	<select id="getAll" resultType="com.atguigu.crm.entity.Authority">
+		select id,name,display_name,permissions,parent_authority_id "parentAuthority.id",url
+		from authorities
+	</select>
+	
+	
+	<resultMap type="com.atguigu.crm.entity.Authority" id="authMap">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="display_name" property="displayName"/>
+		<collection property="subAuthorities" ofType="com.atguigu.crm.entity.Authority">
+			<id column="sub_id" property="id"/>
+			<result column="sub_display_name" property="displayName"/>
+		</collection>
+	</resultMap>
+	<select id="getParentAuthorities" resultMap="authMap">
+		select p.id,p.name,p.display_name,s.id "sub_id",s.display_name "sub_display_name"
+		from authorities p left join authorities s on s.parent_authority_id=p.id
+		where p.parent_authority_id is null
+	</select>
+	
+	
+</mapper>

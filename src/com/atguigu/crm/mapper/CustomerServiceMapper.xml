@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.CustomerServiceMapper">
+	<select id="getArchiveList" parameterType="map" resultType="com.atguigu.crm.entity.CustomerService">
+		select * from (
+		select rownum rn,t.* from (
+		select cs.id,service_type "serviceType",service_title "serviceTitle",
+		deal_result,
+		c.name "customer.name",u.name "createdby.name",create_date "createDate"
+		from customer_services cs
+		left outer join customers c on cs.customer_id=c.id
+		left outer join users u on cs.created_id=u.id
+		where  deal_result is not null
+		<include refid="queryCondition"/>
+		) t
+		)
+		where rn >= #{firstIndex}	
+		<![CDATA[
+		and rn < #{lastIndex}
+		]]>
+	</select>
+	<select id="getFeedBackList" parameterType="map" resultType="com.atguigu.crm.entity.CustomerService">
+		select * from (
+		select rownum rn,t.* from (
+		select cs.id,service_type "serviceType",service_title "serviceTitle",
+		deal_result,
+		c.name "customer.name",u.name "createdby.name",create_date "createDate"
+		from customer_services cs
+		left outer join customers c on cs.customer_id=c.id
+		left outer join users u on cs.created_id=u.id
+		where service_deal is not null and deal_result is null
+		<include refid="queryCondition"/>
+		) t
+		)
+		where rn >= #{firstIndex}	
+		<![CDATA[
+		and rn < #{lastIndex}
+		]]>
+	</select>
+	<select id="getUndealed" parameterType="map" resultType="com.atguigu.crm.entity.CustomerService">
+		select * from (
+		select rownum rn,t.* from (
+		
+		select cs.id,service_type "serviceType",service_title "serviceTitle",
+		c.name "customer.name",u.name "createdby.name",create_date "createDate"
+		from customer_services cs
+		left outer join customers c on cs.customer_id=c.id
+		left outer join users u on cs.created_id=u.id
+		where service_deal is null and cs.allot_id = #{allotToId}
+		<include refid="queryCondition"/>
+		) t
+		)
+		where rn >= #{firstIndex}	
+		<![CDATA[
+		and rn < #{lastIndex}
+		]]>
+	</select>
+	<update id="allot" parameterType="map">
+		update customer_services set allot_date=#{allotDate},allot_id=#{allotTo.id},
+		service_state=#{serviceState}
+		where id=#{id}
+	</update>
+	<select id="getLimitedList" parameterType="map" resultType="com.atguigu.crm.entity.CustomerService">
+		select * from (
+		select rownum rn,t.* from (
+		
+		select cs.id,service_type "serviceType",service_title "serviceTitle",
+		c.name "customer.name",u.name "createdby.name",create_date "createDate"
+		from customer_services cs
+		left outer join customers c on cs.customer_id=c.id
+		left outer join users u on cs.created_id=u.id
+		where cs.allot_id is null
+		<include refid="queryCondition"/>
+		) t
+		)
+		where rn >= #{firstIndex}	
+		<![CDATA[
+		and rn < #{lastIndex}
+		]]>
+	</select>
+	<select id="getArchiveCount" resultType="int">
+		select count(*)
+		from customer_services cs
+		inner join customers c on cs.customer_id=c.id
+		inner join users u on cs.allot_id=u.id
+		where  deal_result is not null
+		<include refid="queryCondition"/>
+	</select>
+	<select id="getFeedbackCount" parameterType="map" resultType="int">
+		select count(*)
+		from customer_services cs
+		inner join customers c on cs.customer_id=c.id
+		inner join users u on cs.allot_id=u.id
+		where cs.service_deal is not null and deal_result is null
+		<include refid="queryCondition"/>
+	</select>
+	<select id="getundealedCount" parameterType="map" resultType="int">
+		select count(*)
+		from customer_services cs
+		inner join customers c on cs.customer_id=c.id
+		inner join users u on cs.allot_id=u.id
+		where cs.service_deal is null and cs.allot_id = #{allotToId}
+		<include refid="queryCondition"/>
+	</select>
+	<select id="getTotalCount" parameterType="map" resultType="int">
+		select count(*)
+		from customer_services cs
+		inner join customers c on cs.customer_id=c.id
+		where cs.service_deal is null
+		<include refid="queryCondition"/>
+	</select>
+	<sql id="queryCondition">
+			<if test="serviceType!=null">
+				and cs.service_type like #{serviceType}
+			</if>
+			<if test="serviceTitle!=null">
+				and cs.service_title like #{serviceTitle}
+			</if>
+			<if test="customerName!=null">
+				and c.name like #{customerName}
+			</if>
+			<if test="minDate!=null">
+				and cs.create_date >= #{minDate}
+			</if>
+			<if test="maxDate!=null">
+				<![CDATA[
+					and cs.create_date <= #{maxDate}
+				]]>
+			</if>
+	</sql>
+	<insert id="save">
+		insert into customer_services(id,service_type,service_title,customer_id,
+		service_state,service_request,created_id,create_date)
+		values(atguigu.nextVal,#{serviceType},#{serviceTitle},#{customer.id},
+		#{serviceState},#{serviceRequest},#{createdby.id},#{createDate})
+	</insert>
+	<select id="getByState" resultType="com.atguigu.crm.entity.CustomerService" >
+		select id,service_type,service_title,
+		c.name "customer.name",u.name "createdby.name",create_date "createDate"
+		from customer_services cs
+		left outer join customers c on cs.customer_id=c.id
+		left outer join users u on cs.created_id=u.id
+		where service_deal is null
+	</select>
+	<select id="getById" resultType="com.atguigu.crm.entity.CustomerService">
+		select cs.id,service_type,service_title,service_request,allot_date,
+		c.name "customer.name",u.name "createdby.name",create_date "createDate",
+		allot_id "allotTo.id",u.name "allotTo.name",service_deal,deal_date,
+		deal_result,satisfy
+		from customer_services cs
+		left outer join customers c on cs.customer_id=c.id
+		left outer join users u on cs.created_id=u.id
+		where cs.id=#{id}
+	</select>	
+	
+	<update id="doDeal" parameterType="com.atguigu.crm.entity.CustomerService">
+		update customer_services
+		set service_deal=#{serviceDeal},deal_date=#{dealDate},service_state=#{serviceState}
+		where id=#{id}
+	</update>
+	<update id="doFeedback">
+		update customer_services
+		set deal_result = #{dealResult},satisfy = #{satisfy},service_state=#{serviceState}
+		where id=#{id}
+	</update>
+	
+	
+	
+	
+	
+</mapper>
