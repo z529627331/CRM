@@ -18,5 +18,6 @@ public class JpaTest {
 		System.out.println(list);
 		System.out.println(222);
 		System.out.println("jpa");
+		
 	}
 }
