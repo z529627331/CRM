@@ -5,6 +5,6 @@ public class MyChart {
 		System.out.println("Hello");
 		System.out.println("local");
 		System.out.println("Server");
-		System.out.println("Server2");
+		System.out.println("Server1");
 	}
 }
